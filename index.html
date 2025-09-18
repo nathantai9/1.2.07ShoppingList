@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Courier New, monospace;
+      color: green;
+      background-color: #ADD8E6;
+    }
+  </style>
+</head>
+<body onload="loadFromLocalStorage()">
+  <h1>localStorage Shopping List app</h1>
+  <ul id="listDisplayBox"></ul>
+  <button onclick="newItemPrompt()">+ADD</button>
+  <script>
+    let myArray = [];
+
+    // Prompt for a new grocery item with options (feel free to simplify to just item name if you want)
+    function newItemPrompt() {
+      const name = prompt("Enter item name:");
+      if (!name) return;
+
+      const quantityStr = prompt("Enter quantity (number):", "1");
+      const quantity = quantityStr ? parseInt(quantityStr) : 1;
+      const priceStr = prompt("Enter price (per item):", "0.00");
+      const price = priceStr ? parseFloat(priceStr) : 0.00;
+      const category = prompt("Enter category (optional):", "");
+
+      addListItem({ name, quantity, price, category });
+    }
+
+    function displaySingleListItem(item) {
+      // Accepts item as an object {name, quantity, price, category}
+      var node = document.createElement("li");
+      node.textContent = `${item.name} (x${item.quantity}) $${item.price.toFixed(2)}${item.category ? " ["+item.category+"]" : ""}`;
+      var button = document.createElement("button");
+      button.innerHTML = 'X';
+      button.onclick = function(){
+        removeListItem(item.name);
+      };
+      node.appendChild(button);
+      document.getElementById("listDisplayBox").appendChild(node);
+    }
+
+    function displayFullList() {
+      document.getElementById("listDisplayBox").innerHTML = "";
+      for (let item of myArray) {
+        displaySingleListItem(item);
+      }
+    }
+
+    function addListItem(itemObj) {
+      myArray.push(itemObj);
+      saveToLocalStorage();
+      displayFullList();
+    }
+
+    function removeListItem(itemName) {
+      // Remove first item with matching name
+      const indexToRemove = myArray.findIndex(obj => obj.name === itemName);
+      if (indexToRemove > -1) {
+        myArray.splice(indexToRemove, 1);
+        saveToLocalStorage();
+        displayFullList();
+      }
+    }
+
+    function saveToLocalStorage() {
+      localStorage.savedList = JSON.stringify(myArray);
+    }
+
+    function loadFromLocalStorage() {
+      if (typeof localStorage.savedList === "undefined" || localStorage.savedList.length === 0) {
+        myArray = [];
+        displayFullList();
+        return;
+      }
+      try {
+        myArray = JSON.parse(localStorage.savedList);
+        if (!Array.isArray(myArray)) myArray = [];
+      } catch (e) {
+        myArray = [];
+      }
+      displayFullList();
+    }
+  </script>
+</body>
+</html>
